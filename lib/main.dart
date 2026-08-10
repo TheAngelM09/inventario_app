@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'routes/app_routes.dart';
-import '../services/update_services.dart';
+import 'services/update_services.dart';
+
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -13,6 +15,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: navigatorKey,
       title: 'Inventario',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
@@ -24,7 +27,6 @@ class MyApp extends StatelessWidget {
       ),
       initialRoute: AppRoutes.login,
       onGenerateRoute: AppRoutes.generateRoute,
-      // Usamos el builder para capturar el BuildContext global y lanzar la verificación
       builder: (context, child) {
         return UpdateCheckerWrapper(child: child ?? const SizedBox());
       },
@@ -47,7 +49,7 @@ class _UpdateCheckerWrapperState extends State<UpdateCheckerWrapper> {
     super.initState();
     // Revisa actualizaciones de GitHub inmediatamente tras dibujar la pantalla inicial
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      UpdateService.checkAndPromptUpdate(context);
+      UpdateService.checkForUpdate();
     });
   }
 

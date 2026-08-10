@@ -3,175 +3,166 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:ota_update/ota_update.dart';
+import '../main.dart';
 
 class UpdateService {
-  // CONFIGURA TUS DATOS DE GITHUB AQUÍ
   static const String _githubUser = 'TheAngelM09';
   static const String _githubRepo = 'inventario_app';
 
-  /// Revisa si hay actualizaciones en GitHub y muestra el diálogo si existe una nueva versión
-  static Future<void> checkAndPromptUpdate(BuildContext context) async {
+  static Future<void> checkForUpdate() async {
     try {
-      PackageInfo packageInfo = await PackageInfo.fromPlatform();
-      String currentVersion = packageInfo.version;
 
-      final url = Uri.parse(
-        'https://api.github.com/repos/$_githubUser/$_githubRepo/releases/latest',
-      );
+      final url = Uri.parse('https://api.github.com/repos/$_githubUser/$_githubRepo/releases/latest');
       final response = await http.get(url);
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
 
-        String tagName = data['tag_name'].toString().replaceAll('v', '').trim();
-        String releaseNotes = data['body'] ?? 'Nuevas mejoras disponibles.';
+        String rawTag = data['tag_name'] ?? '';
+        String latestVersion = rawTag.replaceAll('v', '').trim();
 
-        List assets = data['assets'];
-        var apkAsset = assets.firstWhere(
-              (asset) => asset['name'].toString().endsWith('.apk'),
-          orElse: () => null,
-        );
+        PackageInfo packageInfo = await PackageInfo.fromPlatform();
+        String currentVersion = packageInfo.version;
 
-        if (apkAsset != null) {
-          String downloadUrl = apkAsset['browser_download_url'];
+        if (latestVersion != currentVersion) {
 
-          if (_isVersionNewer(tagName, currentVersion)) {
-            if (context.mounted) {
-              _showUpdateDialog(context, tagName, releaseNotes, downloadUrl);
+          String? apkUrl;
+          List assets = data['assets'] ?? [];
+          for (var asset in assets) {
+            if (asset['name'].toString().endsWith('.apk')) {
+              apkUrl = asset['browser_download_url'];
+              break;
             }
+          }
+
+          final context = navigatorKey.currentContext;
+          if (context != null && context.mounted) {
+            _showUpdateDialog(context, latestVersion, apkUrl);
           }
         }
       }
     } catch (e) {
-      debugPrint('Error comprobando actualización: $e');
-    }
-  }
-
-  static bool _isVersionNewer(String latest, String current) {
-    try {
-      List<int> latestParts = latest.split('.').map(int.parse).toList();
-      List<int> currentParts = current.split('.').map(int.parse).toList();
-
-      for (int i = 0; i < latestParts.length; i++) {
-        if (i >= currentParts.length) return true;
-        if (latestParts[i] > currentParts[i]) return true;
-        if (latestParts[i] < currentParts[i]) return false;
+      final context = navigatorKey.currentContext;
+      if (context != null && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al buscar actualizaciones')),
+        );
       }
-    } catch (e) {
-      debugPrint('Error al comparar versiones: $e');
     }
-    return false;
   }
 
-  static void _showUpdateDialog(
-      BuildContext context,
-      String newVersion,
-      String releaseNotes,
-      String apkUrl,
-      ) {
-    double progress = 0.0;
-    bool isDownloading = false;
-    String statusText = 'Actualización disponible';
+  static void _showUpdateDialog(BuildContext context, String newVersion, String? apkUrl) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext ctx) {
+        return AlertDialog(
+          title: const Text('Actualización disponible'),
+          content: Text('Hay una nueva versión disponible ($newVersion). ¿Deseas descargarla e instalarla ahora?'),
+          actions: [
+            TextButton(
+              child: const Text('Más tarde'),
+              onPressed: () => Navigator.of(ctx).pop(),
+            ),
+            ElevatedButton(
+              child: const Text('Actualizar'),
+              onPressed: () {
+                Navigator.of(ctx).pop();
+                if (apkUrl != null) {
+                  _startDownloadWithProgress(context, apkUrl);
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 
+  static void _startDownloadWithProgress(BuildContext context, String downloadUrl) {
+    double progress = 0;
+    String statusText = 'Iniciando descarga...';
+    void Function(void Function())? updateDialogState;
+
+    // Mostrar ventana con la barra de progreso
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext dialogContext) {
         return StatefulBuilder(
-          builder: (context, setState) {
-            return AlertDialog(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              title: Text('Versión $newVersion disponible'),
-              content: SingleChildScrollView(
-                child: Column(
+          builder: (context, setDialogState) {
+            updateDialogState = setDialogState;
+
+            return PopScope(
+              canPop: false, // Evita cerrar el cuadro mientras descarga
+              child: AlertDialog(
+                title: const Text('Descargando actualización'),
+                content: Column(
                   mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (!isDownloading) ...[
-                      const Text(
-                        'Novedades:',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(releaseNotes),
-                    ] else ...[
-                      Text(statusText),
-                      const SizedBox(height: 12),
-                      LinearProgressIndicator(
-                        value: progress / 100,
-                        color: Colors.green.shade600,
-                      ),
-                      const SizedBox(height: 8),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: Text('${progress.toStringAsFixed(0)}%'),
-                      ),
-                    ],
+                    Text(statusText, style: const TextStyle(fontSize: 14)),
+                    const SizedBox(height: 16),
+                    LinearProgressIndicator(
+                      value: progress > 0 ? progress / 100 : null,
+                      backgroundColor: Colors.grey.shade200,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.green.shade600),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      '${progress.toInt()}%',
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                    ),
                   ],
                 ),
               ),
-              actions: [
-                if (!isDownloading)
-                  TextButton(
-                    onPressed: () => Navigator.pop(dialogContext),
-                    child: const Text('Más tarde'),
-                  ),
-                if (!isDownloading)
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green.shade600,
-                      foregroundColor: Colors.white,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        isDownloading = true;
-                        statusText = 'Iniciando descarga...';
-                      });
-                      try {
-                        OtaUpdate().execute(
-                          apkUrl,
-                          destinationFilename: 'update.apk',
-                        ).listen(
-                              (OtaEvent event) {
-                            setState(() {
-                              if (event.status == OtaStatus.DOWNLOADING) {
-                                statusText = 'Descargando APK...';
-                                progress = double.tryParse(event.value ?? '0') ?? 0;
-                              } else if (event.status == OtaStatus.INSTALLING) {
-                                statusText = 'Abriendo instalador...';
-                                Navigator.pop(dialogContext);
-                              } else if (event.status == OtaStatus.PERMISSION_NOT_GRANTED_ERROR) {
-                                statusText = 'Permisos no concedidos.';
-                                isDownloading = false;
-                              } else if (event.status == OtaStatus.INTERNAL_ERROR) {
-                                statusText = 'Error en la descarga.';
-                                isDownloading = false;
-                              }
-                            });
-                          },
-                          onError: (e) {
-                            setState(() {
-                              statusText = 'Error de conexión.';
-                              isDownloading = false;
-                            });
-                          },
-                        );
-                      } catch (e) {
-                        setState(() {
-                          statusText = 'No se pudo iniciar la actualización.';
-                          isDownloading = false;
-                        });
-                      }
-                    },
-                    child: const Text('Actualizar'),
-                  ),
-              ],
             );
           },
         );
       },
     );
+
+    // Ejecutar descarga con OTA Update
+    try {
+      OtaUpdate().execute(downloadUrl, destinationFilename: 'app-release.apk').listen((OtaEvent event) {
+
+          double parsedValue = double.tryParse(event.value ?? '0') ?? 0;
+
+          if (updateDialogState != null) {
+            updateDialogState!(() {
+              progress = parsedValue;
+              if (event.status == OtaStatus.DOWNLOADING) {
+                statusText = 'Descargando paquete de actualización...';
+              } else if (event.status == OtaStatus.INSTALLING) {
+                statusText = 'Abriendo instalador del sistema...';
+              }
+            });
+          }
+
+          // Al pasar a la fase de instalación, se cierra la ventana de progreso
+          if (event.status == OtaStatus.INSTALLING) {
+            Future.delayed(const Duration(milliseconds: 500), () {
+              final ctx = navigatorKey.currentContext;
+              if (ctx != null && ctx.mounted){
+                Navigator.of(ctx, rootNavigator: true).pop();
+              }
+            });
+          }
+        },
+        onError: (error) {
+          if (updateDialogState != null) {
+            updateDialogState!(() {
+              statusText = 'Error en la descarga. Inténtalo de nuevo.';
+            });
+          }
+        },
+      );
+    } catch (e) {
+      final context = navigatorKey.currentContext;
+      if (context != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error inesperado: $e'), backgroundColor: Colors.red),
+        );
+      }
+    }
   }
 }
