@@ -35,6 +35,17 @@ android {
             signingConfig = signingConfigs.getByName("debug")
         }
     }
+
+    applicationVariants.all { variant ->
+        variant.outputs.all {
+            // Reemplaza "MiAppPersonalizada" por el nombre que desees
+            var nombreBase = "Invbar"
+            var version = variant.versionName
+
+            // Esto generará un archivo como: MiAppPersonalizada-1.0.0.apk
+            outputFileName = "${nombreBase}-${version}.apk"
+        }
+    }
 }
 
 kotlin {

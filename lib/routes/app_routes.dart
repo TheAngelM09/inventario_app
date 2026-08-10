@@ -3,7 +3,7 @@ import '../screens/login.dart';
 import '../screens/home.dart';
 
 class AppRoutes {
-  static const String login = '/login';
+  static const String login = '/';
   static const String inventory = '/inventory';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {

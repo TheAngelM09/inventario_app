@@ -95,6 +95,10 @@ class _InventoryScreenState extends State<InventoryScreen> {
     } catch (e) {
       if (!mounted) return;
       Navigator.pop(context);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error'), backgroundColor: Colors.red),
+      );
     }
   }
 
@@ -144,7 +148,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
-            onPressed: () => Navigator.pushReplacementNamed(context, '/login'),
+            onPressed: () => Navigator.pushReplacementNamed(context, '/'),
           ),
           IconButton(icon: const Icon(Icons.refresh), onPressed: _fetchData),
         ],
