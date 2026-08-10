@@ -36,14 +36,16 @@ android {
         }
     }
 
-    applicationVariants.all { variant ->
-        variant.outputs.all {
-            // Reemplaza "MiAppPersonalizada" por el nombre que desees
-            var nombreBase = "Invbar"
-            var version = variant.versionName
+    applicationVariants.all {
+        val variant = this
+        outputs.all {
+            if (this is com.android.build.gradle.internal.api.ApkVariantOutputImpl) {
+                val nombreBase = "Invbar"
+                val version = variant.versionName
 
-            // Esto generará un archivo como: MiAppPersonalizada-1.0.0.apk
-            outputFileName = "${nombreBase}-${version}.apk"
+                // Asignación correcta del nombre del archivo APK
+                outputFileName = "${nombreBase}-${version}.apk"
+            }
         }
     }
 }
