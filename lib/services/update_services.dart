@@ -6,8 +6,8 @@ import 'package:ota_update/ota_update.dart';
 
 class UpdateService {
   // CONFIGURA TUS DATOS DE GITHUB AQUÍ
-  static const String _githubUser = 'tu-usuario';
-  static const String _githubRepo = 'tu-repositorio';
+  static const String _githubUser = 'TheAngelM09';
+  static const String _githubRepo = 'inventario_app';
 
   /// Revisa si hay actualizaciones en GitHub y muestra el diálogo si existe una nueva versión
   static Future<void> checkAndPromptUpdate(BuildContext context) async {

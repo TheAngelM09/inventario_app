@@ -83,7 +83,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
       final response = await _service.updateRecord(id: id, diff: diff, reason: reason, status: status);
       if (!mounted) return;
 
-      Navigator.pop(context); // Cierra el indicador de carga
+      Navigator.pop(context);
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

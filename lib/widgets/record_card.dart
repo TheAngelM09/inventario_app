@@ -23,7 +23,6 @@ class RecordCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasVerification = item.verification.trim().isNotEmpty && item.verification != 'null';
-    final isVerified = item.endDate != '-';
 
     return Card(
       elevation: 2,
@@ -41,7 +40,7 @@ class RecordCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: isVerified ? Colors.green.shade100 : Colors.grey.shade100,
+                    color: Colors.green.shade100,
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
@@ -85,7 +84,7 @@ class RecordCard extends StatelessWidget {
                           ),
                         ],
                       ),
-                      if (isVerified) ...[
+                      if (hasVerification) ...[
                         const SizedBox(height: 6),
                         Row(
                           children: [
@@ -129,7 +128,7 @@ class RecordCard extends StatelessWidget {
                 ),
               ],
             ),
-            if (!isVerified) ...[
+            if (!hasVerification) ...[
               const Divider(height: 30),
               Row(
                 children: [
