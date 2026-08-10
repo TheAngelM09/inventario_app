@@ -95,7 +95,6 @@ class _InventoryScreenState extends State<InventoryScreen> {
     } catch (e) {
       if (!mounted) return;
       Navigator.pop(context);
-
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error'), backgroundColor: Colors.red),
       );
@@ -116,7 +115,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              _updateRecord(item.id, 0, 'SIN DIFERENCIAS', status: 'verificado');
+              _updateRecord(item.id, 0, 'SIN DIFERENCIAS', status: 'V');
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.green.shade600),
             child: const Text('CONFIRMAR', style: TextStyle(color: Colors.white)),
@@ -131,7 +130,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
       context: context,
       builder: (context) => AdjustmentDialog(
         item: item,
-        onSave: (diff, reason) => _updateRecord(item.id, diff, reason, status: 'ajustado'),
+        onSave: (diff, reason) => _updateRecord(item.id, diff, reason, status: 'A'),
       ),
     );
   }

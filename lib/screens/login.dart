@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -9,6 +10,22 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _nameController = TextEditingController();
+  String _appVersion = 'Cargando...';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAppVersion();
+  }
+
+  Future<void> _loadAppVersion() async {
+    final PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    if (mounted) {
+      setState(() {
+        _appVersion = packageInfo.version;
+      });
+    }
+  }
 
   void _login() {
     final String name = _nameController.text.trim();
@@ -63,6 +80,11 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   child: const Text('INGRESAR', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 ),
+              ),
+              const SizedBox(height: 32),
+              Text(
+                'V $_appVersion',
+                style: const TextStyle(color: Colors.grey, fontSize: 13),
               ),
             ],
           ),

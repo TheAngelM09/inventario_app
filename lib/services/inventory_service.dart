@@ -9,8 +9,13 @@ class InventoryService {
     final response = await http.get(Uri.parse('$baseUrl/getAll?user=$responsibleName')).timeout(const Duration(seconds: 5));
 
     if (response.statusCode == 200) {
-      final List<dynamic> jsonList = json.decode(response.body);
-      return jsonList.map((data) => InventoryItem.fromJson(data)).toList();
+      try {
+        final List<dynamic> jsonList = json.decode(response.body);
+        return jsonList.map((data) => InventoryItem.fromJson(data)).toList();
+      } catch (e) {
+        print('❌ Error decodificando JSON en fetchAll: ${response.body}');
+        throw Exception('El servidor envió un formato inválido (HTML/Error PHP).');
+      }
     } else {
       throw Exception('Error del servidor: ${response.statusCode}');
     }
@@ -36,12 +41,17 @@ class InventoryService {
       body: json.encode(body),
     ).timeout(const Duration(seconds: 5));
 
-    final Map<String, dynamic> responseData = json.decode(response.body);
+    try {
+      final Map<String, dynamic> responseData = json.decode(response.body);
 
-    if (response.statusCode == 200) {
-      return responseData;
-    } else {
-      throw Exception(responseData['mensaje'] ?? 'Error de servidor al actualizar');
+      if (response.statusCode == 200) {
+        return responseData;
+      } else {
+        throw Exception(responseData['mensaje'] ?? 'Error de servidor al actualizar');
+      }
+    } catch (e) {
+      print('❌ Error decodificando JSON en updateRecord: ${response.body}');
+      throw Exception('El servidor respondió con un error técnico (HTML).');
     }
   }
 }
