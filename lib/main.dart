@@ -5,7 +5,6 @@ import 'services/update_services.dart';
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() {
-  WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
 }
 
@@ -14,10 +13,10 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      navigatorKey: navigatorKey,
+    return MaterialApp.router(
       title: 'Inventario',
       debugShowCheckedModeBanner: false,
+      routerConfig: appRouter,
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
@@ -25,8 +24,6 @@ class MyApp extends StatelessWidget {
           primary: Colors.green.shade600,
         ),
       ),
-      initialRoute: AppRoutes.login,
-      onGenerateRoute: AppRoutes.generateRoute,
       builder: (context, child) {
         return UpdateCheckerWrapper(child: child ?? const SizedBox());
       },

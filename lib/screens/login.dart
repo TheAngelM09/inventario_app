@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:invbar/services/inventory_service.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+
+//import 'dart:developer' as developer;
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -9,7 +13,9 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final TextEditingController _nameController = TextEditingController();
+
+  final InventoryService _service = InventoryService();
+  final TextEditingController _ciController = TextEditingController();
   String _appVersion = 'Cargando...';
 
   @override
@@ -27,19 +33,26 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  void _login() {
-    final String name = _nameController.text.trim();
-    if (name.isNotEmpty) {
-      Navigator.pushReplacementNamed(
-        context,
-        '/inventory',
-        arguments: name,
-      );
-    } else {
+  void _login() async {
+
+    final String ciResponsible = _ciController.text.trim();
+    try {
+      if (ciResponsible.isNotEmpty) {
+        final idResponsible = await _service.login(ciResponsible);
+        if (!mounted) return;
+        context.go('home/$idResponsible');
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Por favor ingrese su nombre')),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Por favor ingrese su nombre')),
+        SnackBar(content: Text(e.toString().replaceAll('Exception: ', '')), backgroundColor: Colors.red),
       );
     }
+
   }
 
   @override
@@ -53,16 +66,13 @@ class _LoginScreenState extends State<LoginScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const SizedBox(height: 24),
-              const Text(
-                'LOGIN',
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.green),
-              ),
+              const Text('LOGIN', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.green)),
               const SizedBox(height: 40),
               TextField(
-                controller: _nameController,
-                keyboardType: TextInputType.name,
+                controller: _ciController,
+                keyboardType: TextInputType.number,
                 decoration: InputDecoration(
-                  labelText: 'Nombre del Responsable',
+                  labelText: 'Cedula del Responsable',
                   prefixIcon: const Icon(Icons.person),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 ),

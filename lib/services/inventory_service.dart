@@ -5,15 +5,46 @@ import '../models/inventory_item.dart';
 class InventoryService {
   static const String baseUrl = 'http://192.168.3.232/InvBar/api';
 
-  Future<List<InventoryItem>> fetchAll(String responsibleName) async {
-    final response = await http.get(Uri.parse('$baseUrl/getAll?user=$responsibleName')).timeout(const Duration(seconds: 5));
+  Future<int> login(String ciResponsible) async {
+    try {
+      final response = await http.post(Uri.parse('$baseUrl/login'),
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Accept': 'application/json',
+        },
+        body: ({
+          'ci_responsible': ciResponsible,
+        }),
+      );
+      final Map<String, dynamic> responseData = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+
+        if (responseData['success'] == true || responseData['status'] == 'success') {
+          final responsibleData = responseData['data'];
+          return responsibleData['id'];
+        } else {
+          String message = responseData['message'] ?? responseData['msg'] ?? "Responsable no Encontrado";
+          throw Exception(message);
+        }
+      } else {
+        throw Exception(responseData['message']);
+      }
+    } on http.ClientException {
+      throw Exception("Error de conexión con el servidor.");
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<List<InventoryItem>> fetchAll(String idResponsible) async {
+    final response = await http.get(Uri.parse('$baseUrl/getAll?id_responsible=$idResponsible')).timeout(const Duration(seconds: 5));
 
     if (response.statusCode == 200) {
       try {
         final List<dynamic> jsonList = json.decode(response.body);
         return jsonList.map((data) => InventoryItem.fromJson(data)).toList();
       } catch (e) {
-        print('❌ Error decodificando JSON en fetchAll: ${response.body}');
         throw Exception('El servidor envió un formato inválido (HTML/Error PHP).');
       }
     } else {
@@ -50,7 +81,6 @@ class InventoryService {
         throw Exception(responseData['mensaje'] ?? 'Error de servidor al actualizar');
       }
     } catch (e) {
-      print('❌ Error decodificando JSON en updateRecord: ${response.body}');
       throw Exception('El servidor respondió con un error técnico (HTML).');
     }
   }

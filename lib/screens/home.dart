@@ -1,19 +1,21 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../models/inventory_item.dart';
 import '../services/inventory_service.dart';
 import '../widgets/record_card.dart';
 import '../widgets/adjustment_dialog.dart';
 
-class InventoryScreen extends StatefulWidget {
-  final String responsibleName;
-  const InventoryScreen({super.key, required this.responsibleName});
+class HomeScreen extends StatefulWidget {
+
+  final String idResponsible;
+  const HomeScreen({super.key, required this.idResponsible});
 
   @override
-  State<InventoryScreen> createState() => _InventoryScreenState();
+  State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _InventoryScreenState extends State<InventoryScreen> {
+class _HomeScreenState extends State<HomeScreen> {
   final InventoryService _service = InventoryService();
   final TextEditingController _searchController = TextEditingController();
 
@@ -43,7 +45,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
     });
 
     try {
-      final data = await _service.fetchAll(widget.responsibleName);
+      final data = await _service.fetchAll(widget.idResponsible);
       if (!mounted) return;
       setState(() {
         _allRecords = data;
@@ -140,14 +142,14 @@ class _InventoryScreenState extends State<InventoryScreen> {
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
-        title: const Text('Registros de Inventario'),
+        title: Text('Registros de Inventario'),
         backgroundColor: Colors.green.shade600,
         foregroundColor: Colors.white,
         automaticallyImplyLeading: false,
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
-            onPressed: () => Navigator.pushReplacementNamed(context, '/'),
+            onPressed: () => context.go('/'),
           ),
           IconButton(icon: const Icon(Icons.refresh), onPressed: _fetchData),
         ],
