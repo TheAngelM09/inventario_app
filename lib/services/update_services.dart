@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:ota_update/ota_update.dart';
 import '../main.dart';
+import 'dart:developer' as developer;
 
 class UpdateService {
   static const String _githubUser = 'TheAngelM09';
@@ -14,18 +15,16 @@ class UpdateService {
 
       final url = Uri.parse('https://api.github.com/repos/$_githubUser/$_githubRepo/releases/latest');
       final response = await http.get(url);
-
+      developer.log('*** MESSAGE: Iniciando.... ***', name: 'SERVICES');
       if (response.statusCode == 200) {
-        final data = json.decode(response.body);
 
+        final data = json.decode(response.body);
         String rawTag = data['tag_name'] ?? '';
         String latestVersion = rawTag.replaceAll('v', '').trim();
-
         PackageInfo packageInfo = await PackageInfo.fromPlatform();
         String currentVersion = packageInfo.version;
 
         if (latestVersion != currentVersion) {
-
           String? apkUrl;
           List assets = data['assets'] ?? [];
           for (var asset in assets) {
@@ -37,6 +36,7 @@ class UpdateService {
 
           final context = navigatorKey.currentContext;
           if (context != null && context.mounted) {
+            developer.log('*** MESSAGE: Iniciando Dialogo***', name: 'SERVICES');
             _showUpdateDialog(context, latestVersion, apkUrl);
           }
         }

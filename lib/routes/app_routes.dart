@@ -1,9 +1,11 @@
 import 'package:go_router/go_router.dart';
 import 'package:invbar/screens/home.dart';
 import 'package:invbar/screens/login.dart';
+import '../main.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/',
+  navigatorKey: navigatorKey,
   routes: [
     GoRoute(
       path: '/',
