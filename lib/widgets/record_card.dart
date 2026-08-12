@@ -60,12 +60,88 @@ class RecordCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 12),
-            // Detalles del producto
             Text(item.description, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
             const SizedBox(height: 4),
-            Text("Marca: ${item.brand}", style: TextStyle(color: Colors.grey.shade700, fontSize: 13)),
-            Text("Categoría: ${item.category}", style: TextStyle(color: Colors.grey.shade700, fontSize: 13)),
-            Text("Ubicación: ${item.location}", style: TextStyle(color: Colors.grey.shade700, fontSize: 13)),
+            RichText(
+              text: TextSpan(
+                style: const TextStyle(color: Colors.black, fontSize: 14),
+                children: [
+                  const TextSpan(text: "Marca: ", style: TextStyle(fontWeight: FontWeight.bold)),
+                  TextSpan(text: item.brand),
+                ],
+              ),
+            ),
+            const SizedBox(height: 4),
+            RichText(
+              text: TextSpan(
+                style: const TextStyle(color: Colors.black, fontSize: 14),
+                children: [
+                  const TextSpan(text: "Categoría: ", style: TextStyle(fontWeight: FontWeight.bold)),
+                  TextSpan(text: item.category),
+                ],
+              ),
+            ),
+            const SizedBox(height: 4),
+            RichText(
+              text: TextSpan(
+                style: const TextStyle(color: Colors.black, fontSize: 14),
+                children: [
+                  const TextSpan(text: "Ubicación: ", style: TextStyle(fontWeight: FontWeight.bold)),
+                  TextSpan(text: item.location),
+                ],
+              ),
+            ),
+            const SizedBox(height: 4),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.lock, color: Colors.red),
+                    const SizedBox(width: 5),
+                    RichText(
+                      text: TextSpan(
+                        style: const TextStyle(color: Colors.black, fontSize: 14),
+                        children: [
+                          const TextSpan(text: "Reserv: ", style: TextStyle(fontWeight: FontWeight.bold)),
+                          TextSpan(text: '${item.booking}'),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    const Icon(Icons.inventory_2, color: Colors.amber),
+                    const SizedBox(width: 5),
+                    RichText(
+                      text: TextSpan(
+                        style: const TextStyle(color: Colors.black, fontSize: 14),
+                        children: [
+                          const TextSpan(text: "En Fisc: ", style: TextStyle(fontWeight: FontWeight.bold)),
+                          TextSpan(text: '${item.physical}'),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    const Icon(Icons.bar_chart, color: Colors.green),
+                    const SizedBox(width: 5),
+                    RichText(
+                      text: TextSpan(
+                        style: const TextStyle(color: Colors.black, fontSize: 14),
+                        children: [
+                          const TextSpan(text: "Exist: ", style: TextStyle(fontWeight: FontWeight.bold)),
+                          TextSpan(text: '${item.existence}'),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
             const Divider(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,

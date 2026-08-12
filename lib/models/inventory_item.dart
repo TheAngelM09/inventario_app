@@ -8,6 +8,9 @@ class InventoryItem {
   final String reason;
   final String location;
   final String verification;
+  final int booking;
+  final int physical;
+  final int existence;
   final int unitDiff;
   final String startDate;
   final String endDate;
@@ -22,6 +25,9 @@ class InventoryItem {
     required this.reason,
     required this.location,
     required this.verification,
+    required this.booking,
+    required this.physical,
+    required this.existence,
     required this.unitDiff,
     required this.startDate,
     required this.endDate,
@@ -39,6 +45,9 @@ class InventoryItem {
       reason: json['reason']?.toString() ?? 'S/N',
       location: json['location']?.toString() ?? 'S/N',
       verification: json['verification']?.toString() ?? '',
+      booking: int.tryParse(json['booking']?.toString() ?? '0') ?? 0,
+      physical: int.tryParse(json['physical']?.toString() ?? '0') ?? 0,
+      existence: int.tryParse(json['existence']?.toString() ?? '0') ?? 0,
       unitDiff: int.tryParse(json['unit_diff']?.toString() ?? '0') ?? 0,
       startDate: (json['start_date']?.toString() ?? '-').split(' ')[0],
       endDate: (json['end_date']?.toString() ?? '-').split(' ')[0],
